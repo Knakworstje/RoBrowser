@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stylesheet.css">
+    <title>Roblox Web Browser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #url-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #submit-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        iframe {
+            width: 100%;
+            height: 80vh;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Roblox Web Browser</h1>
+    <input type="text" id="url-input" placeholder="Enter URL (e.g., www.example.com)">
+    <button id="submit-btn">🔍</button>
+    <iframe id="browser-frame" src=""></iframe>
+
+    <script>
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            const urlInput = document.getElementById('url-input').value;
+            fetch(`http://3.69.240.204:3000/${urlInput}`)
+                .then(response => response.json())
+                .then(data => {
+                    const type = data.type;
+                    const address = data.address;
+                    if (type == 'CNAME' || type == 'A') {
+                        document.getElementById('browser-frame').src = `http://${address}`;
+                    } else if (type == 'GITHUB') {
+                        let repoOwner = address.split('/')[1];
+                        let repo = address.split('/')[2];
+                        let file = address.split('/')[address.split('/').length - 1];
+                        
+                        fetch(`https://api.github.com/repos/${repoOwner}/${repo}/contents/${file}`)
+                        .then(response2 => response2.json())
+                        .then(data2 => {
+                            document.getElementById('browser-frame').srcdoc = atob(data2.content);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to load address. Please check the URL and try again.');
+                        });
+                    } else if (type == 'FILE') {
+                        fetch(address)
+                        .then(response2 => response2.json())
+                        .then(data2 => {
+                            document.getElementById('browser-frame').srcdoc = data2.content;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to load address. Please check the URL and try again.');
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load address. Please check the URL and try again.');
+                });
+        });
+    </script>
+</body>
+</html>
